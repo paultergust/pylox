@@ -4,10 +4,7 @@ import sys
 class Scanner:
 
     def __init__(self, source=None):
-        if source is not None:
-            self.run_file(source)
-        else:
-            self.run_prompt()
+        self.src = source
 
     def run_prompt(self):
         a = ''
@@ -16,19 +13,23 @@ class Scanner:
                 a = input('>')
             except EOFError:
                 exit(0)
-            self.run(a)
+            # just print tokens for now
+            print(a.split())
 
     def run_file(self, filename):
         file = self.open_file(filename)
-        self.run(file)
-
-    def run(self, src):
-        for token in self.read_tokens(src):
+        tokens = file.readlines()
+        # print tokens for now
+        for token in tokens:
             print(token)
 
-    def read_tokens(self, line):
-        tokens = line.split()
-        return tokens
+    def run(self):
+        # run from src file
+        if self.src is not None:
+            self.run_file(self.src)
+        # if no src file is provided, run as prompt/interpreter
+        else:
+            self.run_prompt()
 
     def open_file(self, filename):
         return open(filename, 'r')
