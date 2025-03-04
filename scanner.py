@@ -1,10 +1,13 @@
 import sys
 
+from colorama import Fore
+
 
 class Scanner:
 
     def __init__(self, source=None):
         self.src = source
+        self.had_error = False
 
     def run_prompt(self):
         a = ''
@@ -22,6 +25,8 @@ class Scanner:
         # print tokens for now
         for token in tokens:
             print(token)
+        if self.had_error:
+            exit(65)
 
     def run(self):
         # run from src file
@@ -33,6 +38,12 @@ class Scanner:
 
     def open_file(self, filename):
         return open(filename, 'r')
+
+    def error(self, line, msg):
+        self.report(line, "", msg)
+
+    def report(line, where, msg):
+        print(Fore.RED, '[line' + line + '] Error ' + where + ': ' + msg)
 
 
 if __name__ == '__main__':
