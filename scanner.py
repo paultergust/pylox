@@ -12,7 +12,10 @@ class Scanner:
     def run_prompt(self):
         a = ''
         while a is not None:
-            a = input('>')
+            try:
+                a = input('>')
+            except EOFError:
+                exit(0)
             self.run(a)
 
     def run_file(self, filename):
@@ -32,6 +35,6 @@ class Scanner:
 
 
 if __name__ == '__main__':
-    src = sys.argv[1]
+    src = sys.argv[1] if len(sys.argv) > 1 else None
     scanner = Scanner(src)
     scanner.run()
