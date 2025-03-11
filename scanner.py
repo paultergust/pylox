@@ -1,52 +1,54 @@
-import sys
-
-from colorama import Fore
+from .token_type import TokenType
+from .token import Token
 
 
 class Scanner:
 
-    def __init__(self, source=None):
-        self.src = source
-        self.had_error = False
+    def __init__(self, src):
+        self._src = src
+        self._tokens = []
+        self._start = 0
+        self._current = 0
+        self._line = 0
 
-    def run_prompt(self):
-        a = ''
-        while a is not None:
-            try:
-                a = input('>')
-            except EOFError:
-                exit(0)
-            # just print tokens for now
-            print(a.split())
+    def scan_tokens(self):
+        while not self.is_at_end():
+            self._start = self._current
+            self.scan_token()
 
-    def run_file(self, filename):
-        file = self.open_file(filename)
-        tokens = file.readlines()
-        # print tokens for now
-        for token in tokens:
-            print(token)
-        if self.had_error:
-            exit(65)
+        self._tokens.append(Token(TokenType.EOF, '', None, self._line))
+        return self._tokens
 
-    def run(self):
-        # run from src file
-        if self.src is not None:
-            self.run_file(self.src)
-        # if no src file is provided, run as prompt/interpreter
-        else:
-            self.run_prompt()
+    def is_at_end(self):
+        return self._current >= len(self._src)
 
-    def open_file(self, filename):
-        return open(filename, 'r')
+    def scan_token(self):
+        c = self.advance()
+        match c:
+            case '(':
+                self.add_token(TokenType.LEFT_PAREN)
+            case ')':
+                self.add_token(TokenType.RIGHT_PAREN)
+            case '{':
+                self.add_token(TokenType.LEFT_BRACE)
+            case '}':
+                self.add_token(TokenType.RIGHT_BRACE)
+            case ',':
+                self.add_token(TokenType.COMMA)
+            case '.':
+                self.add_token(TokenType.DOT)
+            case '-':
+                self.add_token(TokenType.MINUS)
+            case '+':
+                self.add_token(TokenType.PLUS)
+            case ';':
+                self.add_token(TokenType.SEMICOLON)
+            case '*':
+                self.add_token(TokenType.STAR)
 
-    def error(self, line, msg):
-        self.report(line, "", msg)
+    def advance(self):
+        return self._src[self._current + 1]
 
-    def report(line, where, msg):
-        print(Fore.RED, '[line' + line + '] Error ' + where + ': ' + msg)
-
-
-if __name__ == '__main__':
-    src = sys.argv[1] if len(sys.argv) > 1 else None
-    scanner = Scanner(src)
-    scanner.run()
+    def add_token(self, token_type, literal=None):
+        text = self._src[self._start, self._current]
+        self._tokens.append(Token(token_type, text, literal, self._line))
