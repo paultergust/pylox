@@ -58,8 +58,52 @@ class Scanner:
                 if self.check('/'):
                     while self.peek() != '\n' and not self.is_at_end():
                         self.advance()
+                else:
+                    self.add_token(TokenType.SLASH)
+            case '"':
+                self.string()
+            case ' ':
+                pass
+            case '\r':
+                pass
+            case '\t':
+                pass
+            case '\n':
+                self._line += 1
             case _:
-                Lox().error(self._line, "Unexpected token")
+                if c.isdigit():
+                    self.number()
+                else:
+                    Lox().error(self._line, "Unexpected token")
+
+    def number(self):
+        while self.peek().isdigit():
+            self.advance()
+
+        if self.peek() == '.' and self.peek_next().isdigit():
+            self.advance()
+            while self.peek().isdigit():
+                self.advance()
+        self.add_token(TokenType.NUMBER, float(self._src[self._start, self._current]))
+
+    def peek_next(self):
+        if self._current + 1 >= len(self._src):
+            return '\n'
+        return self.src[self._current + 1]
+
+    def string(self):
+        while self.check() != '"' and not self.is_at_end():
+            if self.chekc() == '\n':
+                self._line += 1
+                self.advance()
+
+            if self.is_at_end():
+                Lox().error(self._line, 'Unterminated string')
+                return
+            self.advance()
+
+        value = self._src[self._start + 1, self._current - 1]
+        self.add_token(TokenType.STRING, value)
 
     def peek(self):
         if self.is_at_end():
