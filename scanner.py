@@ -1,5 +1,6 @@
 from .token_type import TokenType
 from .token import Token
+from .lox import Lox
 
 
 class Scanner:
@@ -45,6 +46,25 @@ class Scanner:
                 self.add_token(TokenType.SEMICOLON)
             case '*':
                 self.add_token(TokenType.STAR)
+            case '!':
+                self.add_token(TokenType.BANG_EQUAL if self.check('=') else TokenType.BANG)
+            case '=':
+                self.add_token(TokenType.EQUAL_EQUAL if self.check('=') else TokenType.EQUAL)
+            case '<':
+                self.add_token(TokenType.LESS_EQUAL if self.check('=') else TokenType.LESS)
+            case '>':
+                self.add_token(TokenType.GREATER_EQUAL if self.check('=') else TokenType.GREATER)
+            case '/':
+                if self.check('/'):
+                    while self.peek() != '\n' and not self.is_at_end():
+                        self.advance()
+            case _:
+                Lox().error(self._line, "Unexpected token")
+
+    def peek(self):
+        if self.is_at_end():
+            return '\0'
+        return self.src[self._current]
 
     def advance(self):
         return self._src[self._current + 1]
@@ -52,3 +72,11 @@ class Scanner:
     def add_token(self, token_type, literal=None):
         text = self._src[self._start, self._current]
         self._tokens.append(Token(token_type, text, literal, self._line))
+
+    def check(self, expected):
+        if self.is_at_end():
+            return False
+        if self._src[self._current] != expected:
+            return False
+        self._current += 1
+        return True
