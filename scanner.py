@@ -12,6 +12,27 @@ class Scanner:
         self._current = 0
         self._line = 0
 
+    def keywords(self, txt):
+        kw = {
+            'and': TokenType.AND,
+            'class': TokenType.CLASS,
+            'else': TokenType.ELSE,
+            'false': TokenType.FALSE,
+            'for': TokenType.FOR,
+            'fun': TokenType.FUN,
+            'if': TokenType.IF,
+            'nil': TokenType.NIL,
+            'or': TokenType.OR,
+            'print': TokenType.PRINT,
+            'return': TokenType.RETURN,
+            'super': TokenType.SUPER,
+            'this': TokenType.THIS,
+            'true': TokenType.TRUE,
+            'var': TokenType.VAR,
+            'while': TokenType.WHILE,
+        }
+        return kw[txt]
+
     def scan_tokens(self):
         while not self.is_at_end():
             self._start = self._current
@@ -73,8 +94,23 @@ class Scanner:
             case _:
                 if c.isdigit():
                     self.number()
+                elif self.is_alphabetic(c):
+                    self.identifier()
                 else:
                     Lox().error(self._line, "Unexpected token")
+
+    def identifier(self):
+        while self.isalnum(self.peek()):
+            self.advance()
+
+        txt = self._src[self._start, self._current]
+        token_type = self.keywords(txt)
+        if token_type is None:
+            token_type = TokenType.IDENTIFIER
+        self.add_token(token_type)
+
+    def is_alphabetic(self, substr):
+        return substr.replace('_', '').isalpha()
 
     def number(self):
         while self.peek().isdigit():
